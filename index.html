@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>vmoebius</title>
+<meta name="description" content="WebGL music visualizer: three ever-evolving VJ shader timelines blended over your own image, video loop or 3D asset.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%2300f0c8'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23000'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three/three.module.js",
+    "three/addons/": "./vendor/three/addons/"
+  }
+}
+</script>
+</head>
+<body>
+<canvas id="gl"></canvas>
+
+<div id="splash">
+  <div class="splash-card">
+    <h1>vmoebius</h1>
+    <p>Three concurrent VJ shader timelines, continuously crossfading and re-blending to the music.<br>Pick an audio source to begin.</p>
+    <div class="splash-buttons">
+      <button data-audio="mic">Microphone</button>
+      <button data-audio="tab">Tab / system audio</button>
+      <button data-audio="file">Audio file</button>
+      <button data-audio="idle">No audio (demo motion)</button>
+    </div>
+    <p class="muted small">The control menu lives in the bottom-right corner. Press <kbd>M</kbd> or hover there to reveal it.</p>
+    <p id="splash-error" class="error" hidden></p>
+  </div>
+</div>
+
+<div id="hud" hidden></div>
+<div id="toast" hidden></div>
+<div id="drop" hidden><span>Drop to load</span></div>
+
+<div id="hotzone" title="Menu (M)"></div>
+
+<aside id="menu" aria-hidden="true">
+  <header>
+    <span class="brand">vmoebius</span>
+    <button id="menu-close" class="icon" title="Close (M)">×</button>
+  </header>
+
+  <section>
+    <h3>Audio</h3>
+    <div class="row">
+      <button data-audio="mic">Mic</button>
+      <button data-audio="tab">Tab / system</button>
+      <button data-audio="file">File</button>
+      <button data-audio="idle">Off</button>
+    </div>
+    <div id="audio-status" class="muted">no input</div>
+    <label>Sensitivity <input type="range" id="a-sens" min="0.2" max="3" step="0.05" value="1"></label>
+    <div class="meters"><i id="m-bass"></i><i id="m-mid"></i><i id="m-treb"></i><b id="m-beat"></b></div>
+  </section>
+
+  <section>
+    <h3>Base asset</h3>
+    <div class="row">
+      <button id="asset-load">Load image / video / 3D</button>
+      <button id="asset-clear">Clear</button>
+    </div>
+    <div id="asset-name" class="muted">none — drop a file anywhere</div>
+    <label>Scale <input type="range" id="t-scale" min="0.05" max="4" step="0.01" value="1"></label>
+    <label>X <input type="range" id="t-x" min="-1" max="1" step="0.005" value="0"></label>
+    <label>Y <input type="range" id="t-y" min="-1" max="1" step="0.005" value="0"></label>
+    <label>Rotation <input type="range" id="t-rot" min="-180" max="180" step="1" value="0"></label>
+    <label>Opacity <input type="range" id="t-opacity" min="0" max="1" step="0.01" value="1"></label>
+    <label>Bass pulse <input type="range" id="t-pulse" min="0" max="1" step="0.01" value="0.25"></label>
+    <label class="only3d">Spin <input type="range" id="t-spin" min="-2" max="2" step="0.01" value="0.3"></label>
+    <label>Keep visible <input type="range" id="t-preserve" min="0" max="1" step="0.01" value="0.3"></label>
+    <div class="row">
+      <button id="t-reset">Reset transform</button>
+    </div>
+    <div class="muted">drag on canvas to move · wheel to scale</div>
+  </section>
+
+  <section>
+    <h3>Evolution</h3>
+    <label>Shader lifetime (s) <input type="range" id="e-life" min="5" max="180" step="1" value="40"></label>
+    <label>Crossfade (s) <input type="range" id="e-fade" min="0.5" max="20" step="0.5" value="6"></label>
+    <label>Blend drift (s) <input type="range" id="e-blend" min="2" max="60" step="1" value="12"></label>
+    <label>Trails <input type="range" id="e-trail" min="0" max="0.97" step="0.01" value="0"></label>
+    <label>Beat FX <input type="range" id="e-fx" min="0" max="1" step="0.01" value="0.5"></label>
+    <label>Layer resolution
+      <select id="e-res">
+        <option value="0.35">low</option>
+        <option value="0.5" selected>medium</option>
+        <option value="0.75">high</option>
+        <option value="1">full</option>
+      </select>
+    </label>
+    <div class="row">
+      <button id="e-shuffle">Shuffle all</button>
+      <button id="e-blends">Reroll blends</button>
+      <button id="e-pause">Pause evolution</button>
+    </div>
+    <div id="layers"></div>
+  </section>
+
+  <footer>
+    <div class="row">
+      <button id="fullscreen">Fullscreen</button>
+      <button id="hud-toggle">HUD</button>
+    </div>
+    <div class="muted keys">M menu · H hud · F fullscreen · Space shuffle · 1 / 2 / 3 reroll layer · B reroll blends</div>
+  </footer>
+</aside>
+
+<input type="file" id="file-asset" hidden accept="image/*,video/*,.glb,.gltf,.obj,.stl,.fbx">
+<input type="file" id="file-audio" hidden accept="audio/*">
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
