@@ -22,6 +22,10 @@ export class ShaderBank {
     let m = this.materials.get(id);
     if (!m) {
       const def = SHADER_BY_ID[id];
+      const extra = {};
+      for (const [k, v] of Object.entries(def.uniforms || {})) {
+        extra[k] = { value: Array.isArray(v) ? (v.length === 2 ? new THREE.Vector2(...v) : v.length === 3 ? new THREE.Vector3(...v) : new THREE.Vector4(...v)) : v };
+      }
       m = new THREE.ShaderMaterial({
         vertexShader: VERTEX,
         fragmentShader: PRELUDE + def.body + MAIN,
@@ -33,7 +37,8 @@ export class ShaderBank {
           u_seed: { value: 0 }, u_params: { value: new THREE.Vector4() },
           u_palA: { value: new THREE.Vector3() }, u_palB: { value: new THREE.Vector3() },
           u_palC: { value: new THREE.Vector3() }, u_palD: { value: new THREE.Vector3() },
-          u_prev: { value: null }
+          u_prev: { value: null },
+          ...extra
         }
       });
       this.materials.set(id, m);
@@ -55,9 +60,11 @@ export class ShaderBank {
     rt.dispose();
   }
 
-  renderTo(target, id, uniforms) {
+  renderTo(target, id, uniforms, slot, dt) {
     const m = this.material(id);
     const u = m.uniforms;
+    const def = SHADER_BY_ID[id];
+    if (def.update && slot && slot.state) def.update(slot.state, u, dt, uniforms.audio, uniforms.beat, uniforms.time);
     u.u_res.value.set(target.width, target.height);
     u.u_time.value = uniforms.time;
     u.u_age.value = uniforms.age;
@@ -126,6 +133,8 @@ export class ShaderTimeline {
     slot.speed = rand(.6, 1.4);
     slot.timeOffset = Math.random() * 100;
     slot.age = 0;
+    const def = SHADER_BY_ID[id];
+    slot.state = def.state ? def.state(slot) : null;
     this._ensureTargets(slot);
     this._clear(slot);
   }
@@ -193,7 +202,7 @@ export class ShaderTimeline {
     this.bank.renderTo(slot.write, slot.shader, {
       time: slot.age * slot.speed + slot.timeOffset, age: slot.age,
       audio, beat, seed: slot.seed, params: slot.params, palette: slot.palette, prev: slot.read.texture
-    });
+    }, slot, dt);
     const t = slot.read; slot.read = slot.write; slot.write = t;
   }
 

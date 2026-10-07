@@ -84,7 +84,10 @@ export class UI {
     // Per-layer rows.
     this.layerRows = app.timelines.map((tl, i) => {
       const row = document.createElement('div'); row.className = 'layer';
-      row.innerHTML = `<span class="idx">L${i + 1}</span><span class="name"></span><span class="blend"></span><span><button class="lock" title="Lock shader">lock</button><button class="next" title="Reroll shader now">next</button></span>`;
+      row.innerHTML = `<span class="idx">L${i + 1}</span><select class="pick" title="Choose shader"></select><span class="blend"></span><span><button class="lock" title="Lock shader">lock</button><button class="next" title="Reroll shader now">next</button></span>`;
+      const sel = row.querySelector('.pick');
+      sel.innerHTML = SHADERS.map(sh => `<option value="${sh.id}">${sh.name}</option>`).join('');
+      sel.addEventListener('change', e => { tl.next(e.target.value); });
       row.querySelector('.lock').addEventListener('click', e => { tl.locked = !tl.locked; e.target.classList.toggle('active', tl.locked); });
       row.querySelector('.next').addEventListener('click', () => tl.next());
       $('layers').appendChild(row);
@@ -180,10 +183,10 @@ export class UI {
       $('m-beat').style.opacity = a.beat;
       app.timelines.forEach((tl, i) => {
         const row = this.layerRows[i];
-        const cur = SHADER_BY_ID[tl.current.shader].name;
-        const inc = tl.incoming ? ` → ${SHADER_BY_ID[tl.incoming.shader].name}` : '';
-        row.querySelector('.name').textContent = cur + inc;
-        row.querySelector('.name').title = SHADER_BY_ID[tl.current.shader].credit;
+        const sel = row.querySelector('.pick');
+        const shown = tl.incoming ? tl.incoming.shader : tl.current.shader;
+        if (document.activeElement !== sel && sel.value !== shown) sel.value = shown;
+        sel.title = SHADER_BY_ID[shown].credit;
         row.querySelector('.blend').textContent = app.compositor.drifts[i].label;
       });
     }

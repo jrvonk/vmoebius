@@ -72,7 +72,7 @@ select { font: inherit; background: #15151d; color: var(--fg); border: 1px solid
 #layers { margin-top: 6px; display: grid; gap: 4px; }
 .layer { display: grid; grid-template-columns: 18px 1fr auto auto; gap: 6px; align-items: center; font-size: 11px; }
 .layer .idx { color: var(--accent); }
-.layer .name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.layer .pick { min-width: 0; width: 100%; font-size: 10px; padding: 2px; }
 .layer .blend { color: var(--muted); font-size: 10px; white-space: nowrap; }
 .layer button { padding: 2px 6px; font-size: 10px; }
 

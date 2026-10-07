@@ -5,7 +5,10 @@
 // Every body must define: vec4 render(vec2 uv, vec2 p)
 // and may use everything from prelude.js (pal, rot, fbm, u_prev, BASS...).
 
+import { FRACTAL_SHADERS } from './fractals.js';
+
 export const SHADERS = [
+...FRACTAL_SHADERS,
 {
   id: 'kali', name: 'Kali Set Fold', cost: 2,
   credit: 'Kali-set iteration (Kali, fractalforums)',

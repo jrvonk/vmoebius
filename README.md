@@ -54,7 +54,7 @@ Then visit <http://localhost:8080>. (ES modules and microphone access need
   blended shader stack).
 * **Evolution** – shader lifetime, crossfade length, blend drift period, trails,
   beat FX (chromatic aberration / vignette / grain), layer resolution, and
-  per-layer lock / next buttons.
+  per-layer shader picker, lock and next buttons.
 
 Settings persist in `localStorage`.
 
@@ -70,7 +70,15 @@ timeline 3 ─► ...         │      ▲
 base layer (image / video / 3D) ─┘
 ```
 
-* `js/shaders/library.js` – 25 layer shaders. Every entry is an original GLSL
+* `js/shaders/fractals.js` – deep-zoom fractals with CPU-side state.
+  **Mandelbulb Dive** raymarches a 3D Mandelbulb while a steered camera
+  approaches the surface at a speed proportional to the distance estimate,
+  so the dive is exponential and never lands; near the float-precision floor
+  it skims along the surface and re-dives, and the power morphs so the
+  fractal keeps changing under the camera. **Mandelbrot Infinite Zoom** dives
+  into famous deep-zoom targets (seahorse valley, elephant valley, Misiurewicz
+  points) with two staggered zoom layers, so the loop never visibly restarts.
+* `js/shaders/library.js` – 25 more layer shaders. Every entry is an original GLSL
   implementation of a technique from the VJ / demoscene / Shadertoy world
   (Kali sets, Truchet weaves, domain warping, gyroid raymarching, Apollonian
   inversion, feedback zoom, phyllotaxis, op-art, glitch, and more). Each
@@ -103,6 +111,11 @@ vec4 render(vec2 uv, vec2 p){      // uv: 0..1, p: centred & aspect-corrected
 }`
 }
 ```
+
+A shader may also carry CPU-side state: give it a `uniforms` map (extra
+uniform defaults), a `state()` factory, and an `update(state, uniforms, dt,
+audio, beat, time)` function that runs every frame before the shader draws.
+See `js/shaders/fractals.js` for the steered Mandelbulb camera.
 
 Helpers available in every shader: `pal()`, `rot()`, `hash11/21/22/31`,
 `noise`, `noise3`, `fbm`, `fbm3`, `sdSeg`, `sdBox`, `aces`, plus `BASS`,
